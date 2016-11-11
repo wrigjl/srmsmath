@@ -1,0 +1,437 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html> <head>
+<title></title>
+
+<style>
+body {
+    background: #4d4d4d;
+}
+
+p {
+    color: #b0b0b0
+}
+
+.label_text {
+    color: #c0c0c0;
+}
+
+.answerText {
+    font-size: 40pt;
+    text-align: center;
+}
+
+.problemText {
+    color: #ff0000;
+    font-size: 40pt;
+    text-align: center;
+}
+
+</style>
+    
+<script language="javascript">
+
+//
+// Copyright (c) 2016 Jason L. Wright (jason@thought.net)
+// All rights reserved.
+//
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions
+// are met:
+// 1. Redistributions of source code must retain the above copyright
+//    notice, this list of conditions and the following disclaimer.
+// 2. Redistributions in binary form must reproduce the above copyright
+//    notice, this list of conditions and the following disclaimer in the
+//    documentation and/or other materials provided with the distribution.
+//
+// THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
+// IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+// WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+// DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT,
+// INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+// (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+// HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+// STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
+// ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
+//
+
+var all_problems = []
+
+function my_onload() {
+    generate_problems()
+
+    for (var i = 0; i < all_problems.length; i++) {
+	opt = document.createElement("option")
+	opt.text = all_problems[i]["name"]
+	document.getElementById("problem_sets").add(opt)
+    }
+    var testname = read_cookie("srmsmathtest")
+    var idx = 0
+    for (var i = 0; i < all_problems.length; i++) {
+	if (testname == all_problems[i]["name"]) {
+	    idx = i
+	    break
+	}
+    }
+    document.getElementById("problem_sets").selectedIndex = idx
+    document.getElementById("problem_sets").disabled = false
+    set_score(0)
+    set_new_problem()
+    set_cookie_test()
+
+    testname = read_cookie("srmsmathaudio")
+    if (testname == "N")
+	document.getElementById("playAudio").checked = false
+    else
+	document.getElementById("playAudio").checked = true
+    set_cookie_audio()
+    
+    var ai = document.getElementById("answer_input")
+    ai.disabled = false
+    ai.value = ""
+    ai.setSelectionRange(0, ai.value.length)
+    ai.focus()
+    
+    document.getElementById("submit_button").disabled = false
+    document.getElementById("status").innerHTML = "Loaded..."
+}
+
+function set_cookie_audio() {
+    if (document.getElementById("playAudio").checked)
+	erase_cookie("srmsmathaudio")
+    else
+	create_cookie("srmsmathaudio", "N", 14)
+}
+
+function problemsetchange(ctrl) {
+    set_score(0)
+    set_new_problem()
+    var ai = document.getElementById("answer_input")
+    ai.value = ""
+    ai.setSelectionRange(0, ai.value.length)
+    ai.focus()
+    set_cookie_test()
+}
+
+function set_score(x) {
+    document.getElementById("score_label").innerHTML = x
+}
+
+function increment_score() {
+    var x = parseInt(document.getElementById("score_label").innerHTML)
+    x = x + 1
+    set_score(x)
+    if (x == 75)
+	play_youwin()
+    else
+	play_success()
+}
+
+function decrement_score() {
+    var x = parseInt(document.getElementById("score_label").innerHTML)
+    x = x - 5
+    if (x < 0)
+	x = 0
+    set_score(x)
+    play_failure()
+}
+
+function play_success() {
+    if (document.getElementById("playAudio").checked)
+	document.getElementById("audioSuccess").play()
+}
+
+function play_failure() {
+    if (document.getElementById("playAudio").checked)
+	document.getElementById("audioFailure").play()
+}
+
+function play_youwin() {
+    if (document.getElementById("playAudio").checked)
+	document.getElementById("audioYouwin").play()
+}
+
+function get_random(n) {
+    return Math.floor(Math.random() * n)
+}
+
+function submit_answer(ctrl) {
+    if (document.getElementById("answer_input").value.trim() ==
+	document.getElementById("answer_label").value.trim()) {
+	increment_score()
+	set_new_problem()
+    } else
+	decrement_score()
+
+    var ai = document.getElementById("answer_input")
+    ai.value = ""
+    ai.setSelectionRange(0, ai.value.length)
+    ai.focus()
+    return false
+}
+
+function set_cookie_test() {
+    var ps = document.getElementById("problem_sets")
+    create_cookie("srmsmathtest",
+		  all_problems[ps.selectedIndex]["name"], 14)
+}
+
+function set_new_problem() {
+    var pset = all_problems[document.getElementById("problem_sets").selectedIndex]
+    var r = get_random(pset["problems"].length)
+    document.getElementById("problem_label").innerHTML = pset["problems"][r]
+    document.getElementById("answer_label").value = pset["answers"][r]
+}
+
+function generate_problems() {
+    for (var i = 2; i <= 12; i++)
+	generate_addition(i)
+    add_mixup_10()
+    add_mixup_18()
+    add_mixup_all()
+
+    generate_subtraction(1, 6)
+    generate_subtraction(7, 8)
+    generate_subtraction(9, 10)
+    generate_subtraction(1, 9)
+    generate_subtraction(11, 12)
+    generate_subtraction(13, 14)
+    generate_subtraction(11, 18)
+    
+    for (var i = 2; i <= 12; i++)
+	generate_multiplication(i)
+    mult_mixup()
+
+    for (var i = 2; i <= 12; i++)
+	generate_division(i)
+    division_mixup()
+}
+
+function generate_addition(target) {
+    var problems = []
+    var answers = []
+    for (var i = 1; i <= 12; i++) {
+	problems.push(target + " + " + i)
+	answers.push(target + i)
+	if (i == target)
+	    continue
+	problems.push(i + " + " + target)
+	answers.push(target + i)
+    }
+    all_problems.push({ "name": "Adding " + target,
+			"problems": problems,
+			"answers": answers})
+}
+
+function add_mixup_10() {
+    var problems = []
+    var answers = []
+    for (var a = 0; a <= 9; a++) {
+	for (var b = 0; b <= 9; b++) {
+	    p = a + b
+	    if (p > 10)
+		continue
+	    problems.push(a + " + " + b)
+	    answers.push(p)
+	}
+    }
+    all_problems.push({ "name": "Adding: Sums to 10",
+			"problems": problems,
+			"answers": answers})
+}
+
+function add_mixup_18() {
+    var problems = []
+    var answers = []
+    for (var a = 0; a <= 9; a++) {
+	for (var b = 0; b <= 9; b++) {
+	    p = a + b
+	    if (p < 10)
+		continue
+	    problems.push(a + " + " + b)
+	    answers.push(p)
+	}
+    }
+    all_problems.push({ "name": "Adding: Sums to 18",
+			"problems": problems,
+			"answers": answers})
+}
+
+function add_mixup_all() {
+    var problems = []
+    var answers = []
+    for (var a = 0; a <= 9; a++) {
+	for (var b = 0; b <= 9; b++) {
+	    p = a + b
+	    problems.push(a + " + " + b)
+	    answers.push(p)
+	}
+    }
+    all_problems.push({ "name": "Adding: All",
+			"problems": problems,
+			"answers": answers})
+}
+
+function generate_subtraction(x, y) {
+    var problems = []
+    var answers = []
+    for (var l = x; l <= y; l++) {
+	for (var r = 1; r <= 9; r++) {
+	    // No negatives
+	    if (r >= l)
+		continue
+
+	    // No difference >= 10
+	    if (l - r >= 10)
+		continue
+	    problems.push(l + " - " + r)
+	    answers.push(l - r)
+	}
+    }
+    all_problems.push({ "name": "Subtracting " + x + " through " + y,
+			"problems": problems,
+			"answers": answers})
+}
+
+function generate_multiplication(target) {
+    var problems = []
+    var answers = []
+    for (i = 1; i <= 12; i++) {
+	problems.push(target + " x " + i)
+	answers.push(target * i)
+	if (i == target)
+	    continue
+	problems.push(i + " x " + target)
+	answers.push(target * i)
+    }
+    all_problems.push({ "name": "Multiplying " + target,
+			"problems": problems,
+			"answers": answers})
+}
+
+function generate_division(n) {
+    var problems = []
+    var answers = []
+    for (var q = 0; q <= 12; q++) {
+	a = n * q
+	problems.push(a + " / " + n)
+	answers.push(q)
+    }
+    all_problems.push({ "name": "Dividing with " + n,
+			"problems": problems,
+			"answers": answers})
+}
+
+function division_mixup() {
+    var problems = []
+    var answers = []
+    for (var a = 0; a <= 12; a++) {
+	for (var b = 0; b <= 12; b++) {
+	    p = a * b
+	    problems.push(p + " / " + b)
+	    answers.push(a)
+	}
+    }
+    all_problems.push({ "name": "Division Mixup",
+			"problems": problems,
+			"answers": answers})
+}
+
+function mult_mixup() {
+    var problems = []
+    var answers = []
+    for (var a = 0; a <= 12; a++) {
+	for (var b = 0; b <= 12; b++) {
+	    p = a * b
+	    problems.push(a + " x " + b)
+	    answers.push(p)
+	}
+    }
+    all_problems.push({ "name": "Multiplication Mixup",
+			"problems": problems,
+			"answers": answers})
+}
+
+function create_cookie(name, value, days) {
+    if (days) {
+	var date = new Date()
+	date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000))
+	var expires = "; expires=" + date.toGMTString()
+    } else
+	var expires = "";
+    document.cookie = name + "=" + value + expires + "; path=/"
+}
+
+function read_cookie(name) {
+    var nameeq = name + "="
+    var ca = document.cookie.split(';')
+    for (var i = 0; i < ca.length; i++) {
+	var c = ca[i];
+	while (c.charAt(0) == ' ')
+	    c = c.substring(1, c.length)
+	if (c.indexOf(nameeq) == 0)
+	    return c.substring(nameeq.length, c.length)
+    }
+    return null
+}
+
+function erase_cookie(name) {
+    create_cookie(name, "", -1)
+}
+
+</script>
+</head>
+
+<body onload="my_onload()">
+<h1></h1>
+
+<form onsubmit="return false" autocomplete="off"><center><table>
+  <tr>
+    <td align="right"><div class="label_text">Score:</div></td>
+    <td align="center"><div class="label_text" id="score_label"></div></td>
+    </tr>
+  <tr>
+    <td colspan="2"><div class="problemText" id="problem_label"></div></td>
+  </tr>
+  <tr>
+    <td><input disabled type="text" class="answerText" size=3 pattern="[0-9]*" id="answer_input" name="answer" value=""></td>
+    <td><input disabled type="submit" name="Ok" value="Ok" onclick="submit_answer(this)" id="submit_button"></td>
+  </tr>
+  <tr>
+    <td colspan="2"><div id="status">Loading...</div></td>
+  </tr>
+  <tr>
+    <td colspan="2"><select disabled id="problem_sets" onchange="problemsetchange(this)"></td>
+  </tr>
+    <td colspan="2"><input onchange="set_cookie_audio()" id="playAudio" type="checkbox" name="playAudio"> Play audio?</td>
+  </tr>
+</table></center></form>
+
+<input type="hidden" id="answer_label">
+    
+<p> The tests above match the tests given at
+<a href="http://www.srms.org">Snake River Montessori School</a>, but
+are not timed.  Answering correctly is worth one point, and answering
+incorrectly subtracts 5 points.  The goal is to reach
+75 points.  No results are sent to this server (the code runs completely in
+your browser).  Tests are randomly generated
+from the problems associated with each problem set, and a cookies are used
+to remember which test you last took and whether you prefer audio or not.
+Good luck!
+
+<audio id="audioSuccess">
+<source src="success.mp3" type="audio/mpeg">
+</audio>
+
+<audio id="audioFailure">
+<source src="failure.mp3" type="audio/mpeg">
+</audio>
+
+<audio id="audioYouwin">
+<source src="youwin.mp3" type="audio/mpeg">
+</audio>
+
+<hr>
+<!-- hhmts start -->Last modified: Tue Nov  8 10:55:50 MST 2016 <!-- hhmts end -->
+</body></html>
