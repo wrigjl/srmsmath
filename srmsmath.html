@@ -157,11 +157,12 @@ function get_random(n) {
 }
 
 function submit_answer(ctrl) {
-    if (document.getElementById("answer_input").value.trim() ==
-	document.getElementById("answer_label").value.trim()) {
+    var answer = document.getElementById("answer_input").value.trim()
+
+    if (answer == document.getElementById("answer_label").value.trim()) {
 	increment_score()
 	set_new_problem()
-    } else
+    } else if (answer.length != 0)
 	decrement_score()
 
     var ai = document.getElementById("answer_input")
