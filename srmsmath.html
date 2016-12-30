@@ -202,7 +202,8 @@ function generate_problems() {
     
     for (var i = 2; i <= 12; i++)
 	generate_multiplication(i)
-    mult_mixup()
+    mult_mixup(9, "Multiplication Mixup 1")
+    mult_mixup(12, "Multiplication Mixup 2")
 
     for (var i = 2; i <= 12; i++)
 	generate_division(i)
@@ -339,17 +340,17 @@ function division_mixup() {
 			"answers": answers})
 }
 
-function mult_mixup() {
+function mult_mixup(themax, thename) {
     var problems = []
     var answers = []
-    for (var a = 0; a <= 12; a++) {
-	for (var b = 0; b <= 12; b++) {
+    for (var a = 0; a <= themax; a++) {
+	for (var b = 0; b <= themax; b++) {
 	    p = a * b
 	    problems.push(a + " x " + b)
 	    answers.push(p)
 	}
     }
-    all_problems.push({ "name": "Multiplication Mixup",
+    all_problems.push({ "name": thename,
 			"problems": problems,
 			"answers": answers})
 }
@@ -434,5 +435,5 @@ Good luck!
 </audio>
 
 <hr>
-<!-- hhmts start -->Last modified: Tue Nov  8 10:55:50 MST 2016 <!-- hhmts end -->
+<!-- hhmts start -->Last modified: Fri Dec 30 10:04:29 MST 2016 <!-- hhmts end -->
 </body></html>
