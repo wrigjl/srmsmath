@@ -206,6 +206,7 @@ function generate_problems() {
     mult_mixup(12, "Multiplication Mixup 2")
 
     generate_division1()
+    generate_division2()
     for (var i = 2; i <= 12; i++)
 	generate_division(i)
     division_mixup()
@@ -324,7 +325,25 @@ function generate_division1() {
 	    answers.push(q / n)
 	}
     }
-    all_problems.push({ "name": "Division Test 1 " + n,
+    all_problems.push({ "name": "Division Test 1",
+			"problems": problems,
+			"answers": answers})
+}
+
+function generate_division2() {
+    var problems = []
+    var answers = []
+    for (var n = 1; n <= 9; n++) {
+    	for (var q = 9; q <= 20; q++) {
+            if ((q % n) != 0)
+		continue
+	    if ((q / n) >= 10)
+		continue
+	    problems.push(q + " / " + n)
+	    answers.push(q / n)
+	}
+    }
+    all_problems.push({ "name": "Dividends 9 - 20 Test 2",
 			"problems": problems,
 			"answers": answers})
 }
