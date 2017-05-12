@@ -209,6 +209,7 @@ function generate_problems() {
     generate_division2()
     generate_division3()
     generate_division4()
+    generate_division5()
     for (var i = 2; i <= 12; i++)
 	generate_division(i)
     division_mixup()
@@ -386,6 +387,24 @@ function generate_division4() {
 			"answers": answers})
 }
 
+function generate_division5() {
+    var problems = []
+    var answers = []
+    for (var n = 1; n <= 9; n++) {
+    	for (var q = 32; q <= 45; q++) {
+            if ((q % n) != 0)
+		continue
+	    if ((q / n) >= 10)
+		continue
+	    problems.push(q + " / " + n)
+	    answers.push(q / n)
+	}
+    }
+    all_problems.push({ "name": "Dividends 32 - 45 Test 6",
+			"problems": problems,
+			"answers": answers})
+}
+
 function generate_division(n) {
     var problems = []
     var answers = []
@@ -509,5 +528,5 @@ Good luck!
 </audio>
 
 <hr>
-<!-- hhmts start -->Last modified: Mon May  8 15:43:09 MDT 2017 <!-- hhmts end -->
+<!-- hhmts start -->Last modified: Fri May 12 16:05:21 MDT 2017 <!-- hhmts end -->
 </body></html>
